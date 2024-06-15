@@ -1,0 +1,95 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# Package information
+# ---------------------------------------------------------------------------------------------------------------------
+
+[package]
+
+name = "xmpp"
+description = "Sample XMPP payload parsing tool"
+version = "0.0.1"
+
+keywords = ["xmpp", "xml", "command-line-interface", "cli"]
+
+categories = ["parser"]
+
+authors = ["WeCan Tribe <tribe@wecangroup.ch>"]
+license = "MIT or Apache-2.0"
+documentation = "https://wecangroup.ch"
+homepage = "https://wecangroup.ch"
+repository = "https://github.com/wecangroup"
+edition = "2021"
+rust-version = "1.80"
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Targets configuration
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Application executable
+[[bin]]
+name = "xmpp"
+path = "./src/bin/main.rs"
+test = false
+bench = false
+doc = false
+
+# Library 
+[lib]
+name = "xmpp_lib"
+path = "./src/lib.rs"
+test = false          # Target must be tested by default
+doctest = false       # Documentation examples are tested by default
+bench = false         # Target must be benchmarked by default
+doc = false           # Library is documented by default
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Package features
+# ---------------------------------------------------------------------------------------------------------------------
+
+[features]
+
+default = []
+
+# Do not inline method (used for debugging)
+without_inline = []
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Package dependencies
+# ---------------------------------------------------------------------------------------------------------------------
+
+[dependencies]
+
+# Command-line arguments parsing tool
+clap = { version = "4.5.7", features = ["derive"] }
+
+# Fast XML reader
+quick-xml = { version = "0.32.0", features = ["async-tokio"] }
+
+# Asynchronous programming support
+tokio = { version = "1.27.0", features = ["full"] }
+
+# Logging features
+log = { version = "0.4.21" }
+
+# Errors processing library
+thiserror = { version = "1.0.61" }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Development (i.e. unit tests, benchmarks, ...) dependencies
+# ---------------------------------------------------------------------------------------------------------------------
+
+[dev-dependencies]
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Building script dependencies
+# ---------------------------------------------------------------------------------------------------------------------
+
+[build-dependencies]
+
+# No build script dependencies for now, folks!
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Benchmarks
+# ---------------------------------------------------------------------------------------------------------------------
+
+# No benchmarks for now, folks!
