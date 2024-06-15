@@ -8,6 +8,10 @@ pub enum Error {
     #[error(transparent)]
     XmlParsingError(#[from] quick_xml::Error),
 
+    /// Catch up errors occuring in strum tool
+    #[error(transparent)]
+    EnumVariantParsingError(#[from] strum::ParseError),
+    
     /// Cannot find XML input file
     #[error("Cannot find input file {0}")]
     CannotFindInputFile(String),

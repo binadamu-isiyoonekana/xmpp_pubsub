@@ -1,8 +1,12 @@
-/// Xmmp pubsub data types definition
-use std::{borrow::Cow, convert::Infallible, fmt};
+//! Xmpp data types
+
+use quick_xml::{events::BytesStart, Reader};
+
+use std::fmt;
+use std::str::FromStr;
+use strum::EnumString;
 
 use crate::errors::{Error, Result};
-use quick_xml::{events::BytesStart, Reader};
 
 /// Data form's field element
 #[derive(Clone)]
@@ -47,7 +51,7 @@ impl Default for Field {
 impl Field {
     /// Builds a new field data type from a given xml description
     pub fn from_element(element: &BytesStart, reader: &mut Reader<&[u8]>) -> Result<Self> {
-        // Instantiate a default field object
+        // Create a default field instance
         let field = &mut Field::default();
 
         // Parse all attributes of the field element
@@ -55,37 +59,27 @@ impl Field {
             match attribute {
                 Ok(attribute) => match attribute.key.as_ref() {
                     b"var" => {
-                        field.var = attribute
+                        let value = attribute
                             .decode_and_unescape_value(reader)
-                            .or_else(|error| {
-                                dbg!("unable to read 'var' field attribute: {:?}", error);
-                                Ok::<Cow<'_, str>, Infallible>(std::borrow::Cow::from(""))
-                            })
+                            .or_else(|error| Err(Error::XmlParsingError(error)))
                             .unwrap()
                             .to_string();
+
+                        field.var = value;
                     }
 
-                    b"type_" => {
-                        field.var = attribute
+                    b"type" => {
+                        let value = attribute
                             .decode_and_unescape_value(reader)
-                            .or_else(|error| {
-                                dbg!("unable to read 'type_' field attribute, {:?}", error);
-                                Ok::<Cow<'_, str>, Infallible>(std::borrow::Cow::from(""))
-                            })
-                            .unwrap()
-                            .to_string();
+                            .or_else(|error| Err(Error::XmlParsingError(error)))
+                            .unwrap();
+
+                        field.type_ = FieldType::from_str(value.as_ref())
+                            .or_else(|error| Err(Error::EnumVariantParsingError(error)))
+                            .unwrap();
                     }
 
-                    b"label" => {
-                        field.var = attribute
-                            .decode_and_unescape_value(reader)
-                            .or_else(|error| {
-                                dbg!("unable to read 'label' field attribute {:?}", error);
-                                Ok::<Cow<'_, str>, Infallible>(std::borrow::Cow::from(""))
-                            })
-                            .unwrap()
-                            .to_string();
-                    }
+                    b"label" => {}
 
                     b"required" => {}
 
@@ -105,6 +99,8 @@ impl Field {
             }
         }
 
+        // Read field's value sub-elements
+
         Ok(field.to_owned())
     }
 }
@@ -117,17 +113,36 @@ pub struct Option_ {
 }
 
 /// Types of data form field
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, EnumString)]
 pub enum FieldType {
+    #[strum(serialize = "boolean")]
     Boolean,
+
+    #[strum(serialize = "fixed")]
     Fixed,
+
+    #[strum(serialize = "hidden")]
     Hidden,
+
+    #[strum(serialize = "jid-multi")]
     JidMulti,
+
+    #[strum(serialize = "jid-single")]
     JidSingle,
+
+    #[strum(serialize = "list-multi")]
     ListMulti,
+
+    #[strum(serialize = "list-single")]
     ListSingle,
+
+    #[strum(serialize = "text-multi")]
     TextMulti,
+
+    #[strum(serialize = "text-private")]
     TextPrivate,
+
+    #[strum(serialize = "text-single")]
     TextSingle,
 }
 

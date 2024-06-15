@@ -68,3 +68,8 @@ pub const XMPP_PUBSUB_PUBLISH_WITHOUT_OPTIONS: &str = r#"<pubsub xmlns='http://j
 </publish>
 </pubsub>
 "#;
+
+/// Field element values
+pub const LAST_MESSAGE_SENDER: &str = r#"last-message-sender"#;
+pub const LAST_MESSAGE_RECIPIENT: &str = r#"last-message-recipient"#;
+pub const LAST_MESSAGE_BODY: &str = r#"last-message-body"#;
