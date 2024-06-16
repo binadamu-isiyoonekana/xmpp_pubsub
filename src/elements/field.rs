@@ -1,6 +1,10 @@
 //! Xmpp data types
 
-use quick_xml::{events::BytesStart, Reader};
+use quick_xml::{
+    events::{BytesStart, Event},
+    name::QName,
+    Reader,
+};
 
 use std::fmt;
 use std::str::FromStr;
@@ -54,7 +58,7 @@ impl Field {
         // Create a default field instance
         let field = &mut Field::default();
 
-        // Parse all attributes of the field element
+        // Parse field element attributes
         for attribute in element.attributes() {
             match attribute {
                 Ok(attribute) => match attribute.key.as_ref() {
@@ -79,18 +83,19 @@ impl Field {
                             .unwrap();
                     }
 
+                    // Skip over these attributes (not of interest for us now)
                     b"label" => {}
-
                     b"required" => {}
-
                     b"options" => {}
-
                     b"values" => {}
-
                     b"media" => {}
 
-                    // Should not reach this branch
-                    _ => (),
+                    // Invalid field element attribute
+                    _ => {
+                        return Err(Error::UnknownFieldElementAttribute(
+                            String::from_utf8(attribute.key.as_ref().to_vec()).unwrap(),
+                        ))
+                    }
                 },
 
                 Err(error) => {
@@ -99,7 +104,73 @@ impl Field {
             }
         }
 
-        // Read field's value sub-elements
+        // Parse field values
+        //
+        // A field element can contain zero or more '<value>' sub-elements, as shown in the following XML snippet
+        // where a 'text-multi' field type contains several lines:
+        //
+        // ...
+        // <x xmlns='jabber:x:data' type='submit'>
+        //   <field type='text-multi' var='description'>
+        //     <value>First text line</value>
+        //     <value>Second text line</value>
+        //     <value>Third text line</value>
+        //   </field>
+        // </x>
+        // ...
+        let mut buffer = Vec::new();
+
+        loop {
+            let event = reader.read_event_into(&mut buffer);
+
+            match event {
+                Ok(Event::Start(ref element)) => match element.name() {
+                    // Expecting a '<value>' sub-element
+                    QName(b"value") => {
+                        let value = reader.read_text(element.name())?;
+                        field.values.push(value.as_ref().into());
+                    }
+
+                    // Exit the loop when and unexpected child element for a field element
+                    _ => {
+                        let element_name = element.name();
+                        println!("  => Element: {:?}", element_name);
+
+                        break;
+                        /*
+                        let element_name = element.name().as_ref();
+                        let unexpected_element = reader.decoder().decode(element_name().into()).unwrap();
+
+                        return Err(Error::ExpectingFieldValueElement(unexpected_element.into()));
+                        */
+                    }
+                },
+
+                // End of field element (i.e. '</field>' tag is reached)
+                Ok(Event::End(ref element)) => match element.name() {
+                    QName(b"field") => break,
+
+                    _ => {
+                        dbg!(
+                            "Weird end event triggered in field element at position: {}",
+                            reader.buffer_position()
+                        );
+                    }
+                },
+
+                Err(error) => return Err(Error::XmlParsingError(error)),
+
+                // Unexpected start event (only start events for '<value>' elements are awaited)
+                _ => {
+                    dbg!(
+                        "Weird start event triggered in field element at position: {}",
+                        reader.buffer_position()
+                    );
+                }
+            }
+
+            buffer.clear();
+        }
 
         Ok(field.to_owned())
     }

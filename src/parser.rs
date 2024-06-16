@@ -2,9 +2,8 @@ use quick_xml::events::Event;
 use quick_xml::name::QName;
 use quick_xml::reader::Reader;
 
-use crate::Field;
 use crate::errors::{Error, Result};
-
+use crate::Field;
 
 /// Fast Xmpp pubsub protocol parser
 ///
@@ -32,7 +31,16 @@ impl<R> XmppPubSubParser<R> {
     /// Builds a new Xmpp parser instance given a data source reader
     ///
     /// Currently, this Xmpp reader supports string slice or file contents.
-    pub fn from_reader(reader: Reader<R>) -> Self {
+    pub fn from_reader(mut reader: Reader<R>) -> Self {
+        // Set default reader configuration (could be passed as a parameter as well)
+        let config = reader.config_mut();
+
+        // Trim start and end space from xml elements
+        config.trim_text(true);
+
+        // Return same starting events for empty (e.g. '<empty_element />') and non-empty (e.g. '<value>hello</value>') elements
+        config.expand_empty_elements = true;
+
         Self { reader }
     }
 }
