@@ -5,10 +5,10 @@
 [package]
 
 name = "xmpp"
-description = "Sample XMPP payload parsing tool"
+description = "Opiniated XMPP PubSub protocol parser"
 version = "0.0.1"
 
-keywords = ["xmpp", "xml", "command-line-interface", "cli"]
+keywords = ["xmpp", "xml", "pubsub", "command-line-interface"]
 
 categories = ["parser"]
 
@@ -73,6 +73,9 @@ log = { version = "0.4.21" }
 
 # Errors processing library
 thiserror = { version = "1.0.61" }
+
+# Stringify enums
+strum = { version = "0.26.2", features = ["derive"] }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Development (i.e. unit tests, benchmarks, ...) dependencies

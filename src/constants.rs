@@ -21,10 +21,14 @@ pub const XMPP_PUBSUB_PUBLISH_WITH_OPTIONS: &str = r#"<pubsub xmlns='http://jabb
               <value>toto@foo.org</value>
             </field>
             <field type="text-single" var="last-message-body">
-              <value>Mon super message</value>
+              <value>My first message</value>
             </field>
             <field type="jid-single" var="last-message-recipient">
               <value>tata@foo.org</value>
+            </field>
+            <field type='text-multi' var='description'>
+              <value>First description line</value>
+              <value>Second description line</value>
             </field>
           </x>
         </notification>
@@ -68,3 +72,10 @@ pub const XMPP_PUBSUB_PUBLISH_WITHOUT_OPTIONS: &str = r#"<pubsub xmlns='http://j
 </publish>
 </pubsub>
 "#;
+
+/// Field element values
+pub const LAST_MESSAGE_SENDER: &str = r#"last-message-sender"#;
+pub const LAST_MESSAGE_RECIPIENT: &str = r#"last-message-recipient"#;
+pub const LAST_MESSAGE_BODY: &str = r#"last-message-body"#;
+
+pub const DESCRIPTION: &str = r#"description"#;
